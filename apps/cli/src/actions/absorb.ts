@@ -46,7 +46,7 @@ interface DryRunResult {
 }
 
 function runDryRun(base: string): DryRunResult {
-  const result = spawnSync('git', ['absorb', '--base', base, '--dry-run'], {
+  const result = spawnSync('git', ['absorb', '--base', base, '--force-author', '--dry-run'], {
     stdio: 'pipe',
     encoding: 'utf-8',
   });
@@ -89,7 +89,7 @@ type ExecuteAbsorbResult = 'DONE' | 'CONFLICT';
 
 function executeAbsorb(base: string): ExecuteAbsorbResult {
   // Run git absorb without --and-rebase so we can control the rebase ourselves
-  const absorbResult = spawnSync('git', ['absorb', '--base', base], {
+  const absorbResult = spawnSync('git', ['absorb', '--base', base, '--force-author'], {
     stdio: 'inherit',
   });
 
