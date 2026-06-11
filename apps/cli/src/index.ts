@@ -6,6 +6,7 @@ import tmp from 'tmp';
 import yargs from 'yargs';
 import { globalArgumentsOptions } from './lib/global_arguments';
 import { getYargsInput } from './lib/pre-yargs/preprocess_command';
+import { ExitFailedError } from './lib/errors';
 
 // this line gets rid of warnings about "experimental fetch API" for our users
 // while still showing us warnings when we test with DEBUG=1
@@ -17,8 +18,12 @@ if (!process.env.DEBUG) {
 tmp.setGracefulCleanup();
 
 process.on('uncaughtException', (err) => {
-  console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.message}`));
-  console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.stack}`));
+  if (err instanceof ExitFailedError) {
+    console.log(chalk.redBright(err.message));
+  } else {
+    console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.message}`));
+    console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.stack}`));
+  }
   // eslint-disable-next-line no-restricted-syntax
   process.exit(1);
 });
