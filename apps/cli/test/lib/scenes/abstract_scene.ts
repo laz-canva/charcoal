@@ -61,11 +61,9 @@ export abstract class AbstractScene {
   public cleanup(): void {
     process.chdir(this.oldDir);
     if (!process.env.DEBUG) {
-      fs.emptyDirSync(this.dir);
-      this.tmpDir.removeCallback();
-      if (this.originDir && this.originTmpDir) {
-        fs.emptyDirSync(this.originDir);
-        this.originTmpDir.removeCallback();
+      fs.removeSync(this.dir);
+      if (this.originDir) {
+        fs.removeSync(this.originDir);
       }
     }
   }
