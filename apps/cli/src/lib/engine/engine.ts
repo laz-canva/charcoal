@@ -939,14 +939,32 @@ export function composeEngine({
     },
     pullTrunk: () => {
       git.pruneRemote(remote);
-      const currentBranchName = getCurrentBranchOrThrow();
       const trunkName = assertTrunk();
       const oldTrunkCachedMeta = cache.branches[trunkName];
+
+      // Fast path: move trunk via a direct ref update, which works from any
+      // worktree and never conflicts with trunk being checked out in a
+      // *different* one (e.g. a dedicated trunk checkout kept fast-forward-
+      // only, or another worktree mid-`gt sync`). Only falls through to the
+      // checkout-based path below when trunk is checked out right here.
+      const detachedResult = git.pullBranchDetached(remote, trunkName);
+      if (detachedResult !== 'CHECKED_OUT_HERE') {
+        if (detachedResult === 'CONFLICT') {
+          return 'PULL_CONFLICT';
+        }
+        const newTrunkRevision = git.getShaOrThrow(trunkName);
+        cache.branches[trunkName] = {
+          ...oldTrunkCachedMeta,
+          branchRevision: newTrunkRevision,
+        };
+        return detachedResult === 'UNNEEDED' ? 'PULL_UNNEEDED' : 'PULL_DONE';
+      }
+
+      const currentBranchName = getCurrentBranchOrThrow();
       try {
         git.switchBranch(trunkName);
         const result = git.pullBranch(remote, trunkName);
         if (result === 'CONFLICT') {
-          git.switchBranch(currentBranchName);
           return 'PULL_CONFLICT';
         }
         const newTrunkRevision = git.getShaOrThrow(trunkName);

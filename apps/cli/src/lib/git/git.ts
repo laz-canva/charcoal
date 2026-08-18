@@ -37,7 +37,7 @@ import { logLong } from './log';
 import { getMergeBase } from './merge_base';
 import { getUnmergedFiles, getRebaseHead } from './merge_conflict_help';
 import { pruneRemote } from './prune_remote';
-import { pullBranch } from './pull_branch';
+import { pullBranch, pullBranchDetached } from './pull_branch';
 import { pushBranch } from './push_branch';
 import {
   rebase,
@@ -102,6 +102,7 @@ function composeGitInternal() {
     showCommits,
     getFileContents,
     pullBranch,
+    pullBranchDetached,
     pushBranch,
     rebaseInProgress,
     rebase,
