@@ -46,10 +46,14 @@ interface DryRunResult {
 }
 
 function runDryRun(base: string): DryRunResult {
-  const result = spawnSync('git', ['absorb', '--base', base, '--force-author', '--dry-run'], {
-    stdio: 'pipe',
-    encoding: 'utf-8',
-  });
+  const result = spawnSync(
+    'git',
+    ['absorb', '--base', base, '--force-author', '--dry-run'],
+    {
+      stdio: 'pipe',
+      encoding: 'utf-8',
+    }
+  );
 
   const rawOutput = (result.stderr || '').trim();
   const lines = rawOutput.split('\n');
@@ -89,9 +93,13 @@ type ExecuteAbsorbResult = 'DONE' | 'CONFLICT';
 
 function executeAbsorb(base: string): ExecuteAbsorbResult {
   // Run git absorb without --and-rebase so we can control the rebase ourselves
-  const absorbResult = spawnSync('git', ['absorb', '--base', base, '--force-author'], {
-    stdio: 'inherit',
-  });
+  const absorbResult = spawnSync(
+    'git',
+    ['absorb', '--base', base, '--force-author'],
+    {
+      stdio: 'inherit',
+    }
+  );
 
   if (absorbResult.status !== 0) {
     throw new ExitFailedError('git absorb failed');
@@ -192,10 +200,7 @@ export async function absorbAction(
       },
       context
     );
-    printConflictStatus(
-      `Hit conflict during absorb rebase.`,
-      context
-    );
+    printConflictStatus(`Hit conflict during absorb rebase.`, context);
     throw new RebaseConflictError();
   }
 

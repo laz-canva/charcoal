@@ -36,7 +36,9 @@ export const handler = async (argv: argsT): Promise<void> => {
       );
       if (value === 'prompt') {
         context.splog.info(
-          `  ${chalk.gray('→ Will prompt for confirmation when trunk is out of sync')}`
+          `  ${chalk.gray(
+            '→ Will prompt for confirmation when trunk is out of sync'
+          )}`
         );
       } else if (value === 'ignore') {
         context.splog.info(
@@ -52,7 +54,9 @@ export const handler = async (argv: argsT): Promise<void> => {
         (data) => (data.ignoreOutOfSyncTrunk = undefined)
       );
       context.splog.info(
-        `Out-of-sync trunk behavior unset. Will default to ${chalk.cyan('prompt')}`
+        `Out-of-sync trunk behavior unset. Will default to ${chalk.cyan(
+          'prompt'
+        )}`
       );
     } else {
       const currentValue =
@@ -66,7 +70,9 @@ export const handler = async (argv: argsT): Promise<void> => {
       );
       if (currentValue === 'prompt') {
         context.splog.info(
-          `  ${chalk.gray('→ Will prompt for confirmation when trunk is out of sync')}`
+          `  ${chalk.gray(
+            '→ Will prompt for confirmation when trunk is out of sync'
+          )}`
         );
       } else if (currentValue === 'ignore') {
         context.splog.info(
@@ -79,10 +85,14 @@ export const handler = async (argv: argsT): Promise<void> => {
       }
       context.splog.newline();
       context.splog.info(
-        `To change: ${chalk.cyan('gt config ignore-out-of-sync-trunk --set <prompt|ignore|warn>')}`
+        `To change: ${chalk.cyan(
+          'gt config ignore-out-of-sync-trunk --set <prompt|ignore|warn>'
+        )}`
       );
       context.splog.info(
-        `One-time override: ${chalk.cyan('GT_IGNORE_OUT_OF_SYNC_TRUNK=ignore gt submit')}`
+        `One-time override: ${chalk.cyan(
+          'GT_IGNORE_OUT_OF_SYNC_TRUNK=ignore gt submit'
+        )}`
       );
       context.splog.info(
         `Or use CLI flag: ${chalk.cyan('gt submit --ignore-out-of-sync-trunk')}`
