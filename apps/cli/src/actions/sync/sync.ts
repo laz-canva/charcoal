@@ -91,6 +91,14 @@ export async function pullTrunk(
     `🌲 Pulling ${chalk.cyan(context.engine.trunk)} from remote...`
   );
   const pullResult = context.engine.pullTrunk();
+  if (pullResult === 'PULL_SKIPPED') {
+    context.splog.info(
+      `${chalk.yellow(
+        context.engine.trunk
+      )} is checked out in another worktree — skipping, it'll catch up next sync from there.`
+    );
+    return;
+  }
   if (pullResult !== 'PULL_CONFLICT') {
     context.splog.info(
       pullResult === 'PULL_UNNEEDED'

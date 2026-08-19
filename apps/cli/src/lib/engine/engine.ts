@@ -134,7 +134,11 @@ export type TEngine = {
   branchMatchesRemote: (branchName: string) => boolean;
 
   pushBranch: (branchName: string, forcePush: boolean) => void;
-  pullTrunk: () => 'PULL_DONE' | 'PULL_UNNEEDED' | 'PULL_CONFLICT';
+  pullTrunk: () =>
+    | 'PULL_DONE'
+    | 'PULL_UNNEEDED'
+    | 'PULL_CONFLICT'
+    | 'PULL_SKIPPED';
   hardReset: (sha?: string) => void;
   resetTrunkToRemote: () => void;
   clean: () => void;
@@ -942,15 +946,19 @@ export function composeEngine({
       const trunkName = assertTrunk();
       const oldTrunkCachedMeta = cache.branches[trunkName];
 
-      // Fast path: move trunk via a direct ref update, which works from any
-      // worktree and never conflicts with trunk being checked out in a
-      // *different* one (e.g. a dedicated trunk checkout kept fast-forward-
-      // only, or another worktree mid-`gt sync`). Only falls through to the
-      // checkout-based path below when trunk is checked out right here.
+      // Fast path: move trunk via a plain fetch refspec, which works from any
+      // worktree and — since git itself refuses a fetch into a branch that's
+      // checked out in a *different* worktree (e.g. a dedicated trunk
+      // checkout, or another worktree mid-`gt sync`) — can never desync one.
+      // Only falls through to the checkout-based path below when trunk is
+      // checked out right here.
       const detachedResult = git.pullBranchDetached(remote, trunkName);
       if (detachedResult !== 'CHECKED_OUT_HERE') {
         if (detachedResult === 'CONFLICT') {
           return 'PULL_CONFLICT';
+        }
+        if (detachedResult === 'CHECKED_OUT_ELSEWHERE') {
+          return 'PULL_SKIPPED';
         }
         const newTrunkRevision = git.getShaOrThrow(trunkName);
         cache.branches[trunkName] = {
