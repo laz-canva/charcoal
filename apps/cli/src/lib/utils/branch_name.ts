@@ -7,6 +7,10 @@ const BRANCH_NAME_REPLACE_REGEX_WITH_SLASH = /[^-_/.a-zA-Z0-9]+/g;
 // When replacing slashes, don't allow them
 const BRANCH_NAME_REPLACE_REGEX_NO_SLASH = /[^-_.a-zA-Z0-9]+/g;
 const BRANCH_NAME_IGNORE_REGEX = /[/.]*$/;
+// Separators that are interchangeable for prefix-dedup purposes: an explicit
+// branch name of "user_foo" or "user/foo" both already carry a "user"-style
+// prefix, even after slash-replacement has rewritten "/" to "_".
+const SEPARATOR_NORMALIZE_REGEX = /[-_/.]/g;
 
 export function replaceUnsupportedCharacters(
   input: string,
@@ -39,6 +43,14 @@ export function getBranchReplacement(context: TContextLite): string {
   return context.userConfig.data.branchReplacement ?? '_';
 }
 
+// Compares with separators normalized so a prefix check isn't fooled by
+// slash-replacement (or by the caller having typed the prefix with a
+// different separator) into re-adding a prefix that's already there.
+function alreadyHasPrefix(sanitized: string, branchPrefix: string): boolean {
+  const normalize = (s: string) => s.replace(SEPARATOR_NORMALIZE_REGEX, '_');
+  return normalize(sanitized).startsWith(normalize(branchPrefix));
+}
+
 export function newBranchName(
   branchName: string | undefined,
   commitMessage: string | undefined,
@@ -54,7 +66,7 @@ export function newBranchName(
     if (
       applyPrefixToExplicit &&
       branchPrefix &&
-      !sanitized.startsWith(branchPrefix)
+      !alreadyHasPrefix(sanitized, branchPrefix)
     ) {
       return (branchPrefix + sanitized).slice(0, MAX_BRANCH_NAME_BYTE_LENGTH);
     }

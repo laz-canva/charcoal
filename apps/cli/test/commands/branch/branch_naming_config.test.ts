@@ -44,7 +44,9 @@ for (const scene of [new BasicScene()]) {
 
       it('preserves slashes when branchReplaceSlashes is false', () => {
         const context = scene.getContext();
-        context.userConfig.update((data) => (data.branchReplaceSlashes = false));
+        context.userConfig.update(
+          (data) => (data.branchReplaceSlashes = false)
+        );
         const result = replaceUnsupportedCharacters(
           'feature/my-branch',
           context
@@ -64,7 +66,9 @@ for (const scene of [new BasicScene()]) {
 
       it('preserves nested slashes when branchReplaceSlashes is false', () => {
         const context = scene.getContext();
-        context.userConfig.update((data) => (data.branchReplaceSlashes = false));
+        context.userConfig.update(
+          (data) => (data.branchReplaceSlashes = false)
+        );
         const result = replaceUnsupportedCharacters(
           'team/feature/sub-task',
           context
@@ -132,6 +136,28 @@ for (const scene of [new BasicScene()]) {
         });
         const result = newBranchName('user/my-branch', undefined, context);
         expect(result).to.equal('user/my-branch');
+      });
+
+      it('does not double-apply prefix when the explicit name is typed with the prefix and slashes are replaced (default)', () => {
+        const context = scene.getContext();
+        context.userConfig.update((data) => {
+          data.branchPrefix = 'user/';
+          data.branchPrefixExplicit = true;
+        });
+        // branchReplaceSlashes defaults to true, so 'user/my-branch' sanitizes
+        // to 'user_my-branch' before the prefix check runs.
+        const result = newBranchName('user/my-branch', undefined, context);
+        expect(result).to.equal('user_my-branch');
+      });
+
+      it('does not double-apply prefix when the explicit name already has it with a different separator', () => {
+        const context = scene.getContext();
+        context.userConfig.update((data) => {
+          data.branchPrefix = 'user/';
+          data.branchPrefixExplicit = true;
+        });
+        const result = newBranchName('user_my-branch', undefined, context);
+        expect(result).to.equal('user_my-branch');
       });
     });
 
