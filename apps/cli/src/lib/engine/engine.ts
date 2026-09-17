@@ -133,7 +133,7 @@ export type TEngine = {
   populateRemoteShas: () => Promise<void>;
   branchMatchesRemote: (branchName: string) => boolean;
 
-  pushBranch: (branchName: string, forcePush: boolean) => void;
+  pushBranch: (branchName: string, forcePush: boolean) => Promise<void>;
   pullTrunk: () =>
     | 'PULL_DONE'
     | 'PULL_UNNEEDED'
@@ -937,9 +937,9 @@ export function composeEngine({
       const remoteParentRevision = git.getRemoteSha(branchName);
       return cachedMeta.branchRevision === remoteParentRevision;
     },
-    pushBranch: (branchName: string, forcePush: boolean) => {
+    pushBranch: async (branchName: string, forcePush: boolean) => {
       assertBranchIsValidAndNotTrunkAndGetMeta(branchName);
-      git.pushBranch({ remote, branchName, noVerify, forcePush });
+      await git.pushBranch({ remote, branchName, noVerify, forcePush });
     },
     pullTrunk: () => {
       git.pruneRemote(remote);

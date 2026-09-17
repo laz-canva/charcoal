@@ -54,6 +54,11 @@ export type TRunAsyncGitCommandParameters = {
   };
   onError: 'throw' | 'ignore';
   resource: string | null;
+  // Tee the child's stdout/stderr to our own as it arrives (in addition to
+  // the usual buffering), so a long-running command with a chatty child
+  // (e.g. a pre-push hook running lint/build steps) shows live progress
+  // instead of going silent until it exits.
+  stream?: boolean;
 };
 
 export function runAsyncGitCommand(
@@ -132,16 +137,28 @@ function runAsyncGitCommandInternal(
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    // Nothing writes to the child's stdin here; close it right away so a
+    // hook that reads from stdin (e.g. pre-push) sees immediate EOF instead
+    // of blocking, matching spawnSync's implicit behavior when no `input`
+    // is given.
+    proc.stdin.end();
+
     let stdout = '';
     proc.stdout.setEncoding('utf8');
     proc.stdout.on('data', function (data) {
       stdout += data.toString();
+      if (params.stream) {
+        process.stdout.write(data);
+      }
     });
 
     let stderr = '';
     proc.stderr.setEncoding('utf8');
     proc.stderr.on('data', function (data) {
       stderr += data.toString();
+      if (params.stream) {
+        process.stderr.write(data);
+      }
     });
 
     proc.addListener('close', (code, signal) => {

@@ -17,7 +17,7 @@ for (const scene of [new CloneScene()]) {
       scene.repo.runCliCommand([`create`, `1`, `-am`, `1`]);
       expect(scene.repo.currentBranchName()).to.equal('1');
 
-      composeGit().pushBranch({
+      await composeGit().pushBranch({
         remote: 'origin',
         branchName: '1',
         noVerify: false,
@@ -29,7 +29,7 @@ for (const scene of [new CloneScene()]) {
       );
     });
 
-    it('fails to push to a branch with external commits', () => {
+    it('fails to push to a branch with external commits', async () => {
       scene.repo.createChange('1');
       scene.repo.runCliCommand([`create`, `1`, `-am`, `1`]);
       expect(scene.repo.currentBranchName()).to.equal('1');
@@ -40,14 +40,14 @@ for (const scene of [new CloneScene()]) {
         scene.repo.getRef('refs/heads/1')
       );
 
-      expect(() =>
+      await expect(
         composeGit().pushBranch({
           remote: 'origin',
           branchName: '1',
           noVerify: false,
           forcePush: false,
         })
-      ).to.throw();
+      ).to.be.rejected;
     });
 
     it('can pull trunk from remote', async () => {

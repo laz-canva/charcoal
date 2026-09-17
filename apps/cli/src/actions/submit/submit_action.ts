@@ -291,7 +291,7 @@ export async function submitAction(
 
   for (const submissionInfo of submissionInfos) {
     try {
-      context.engine.pushBranch(submissionInfo.head, args.forcePush);
+      await context.engine.pushBranch(submissionInfo.head, args.forcePush);
     } catch (err) {
       if (
         err instanceof CommandFailedError &&

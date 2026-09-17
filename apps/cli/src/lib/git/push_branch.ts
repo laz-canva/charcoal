@@ -1,14 +1,19 @@
-import { runGitCommand } from './runner';
+import { runAsyncGitCommand } from './runner';
 
-export function pushBranch(opts: {
+export async function pushBranch(opts: {
   remote: string;
   branchName: string;
   noVerify: boolean;
   forcePush: boolean;
-}): void {
+}): Promise<void> {
   const forceOption = opts.forcePush ? '--force' : '--force-with-lease';
 
-  runGitCommand({
+  // Runs async (rather than the sync spawnSync-based runGitCommand) and
+  // streams output live: `git push` runs the pre-push hook (taz check --
+  // lint/build/tests) as a child whose stdout/stderr would otherwise sit
+  // buffered until the whole push finishes, making a slow-but-healthy hook
+  // run indistinguishable from a hang.
+  await runAsyncGitCommand({
     args: [
       `push`,
       `-u`,
@@ -17,8 +22,8 @@ export function pushBranch(opts: {
       opts.branchName,
       ...(opts.noVerify ? ['--no-verify'] : []),
     ],
-    options: { stdio: 'pipe' },
     onError: 'throw',
     resource: 'pushBranch',
+    stream: true,
   });
 }
